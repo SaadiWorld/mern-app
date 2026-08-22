@@ -5,6 +5,7 @@ import placeRoutes from "./routes/place.routes";
 
 const app: Application = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/users", userRoutes);
 app.use("/api/places", placeRoutes);
