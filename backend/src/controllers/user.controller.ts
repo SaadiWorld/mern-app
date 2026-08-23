@@ -7,9 +7,9 @@ import HttpError from '../utils/http-error';
 const dummyUsers = [
   {
     id: 'u1',
-    name: 'Max Schwarz',
-    email: 'test@test.com',
-    password: 'testers'
+    name: 'Walter White',
+    email: 'walter.white@breakingbad.com',
+    password: 'heisenberg'
   }
 ];
 

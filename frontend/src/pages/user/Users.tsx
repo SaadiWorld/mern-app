@@ -4,7 +4,7 @@ import type { User } from "../../types/user";
 const Users = () => {
   const USERS: User[] = [
     {
-      id: 1,
+      id: "u1",
       name: "Walter White",
       image:
         "https://static.wikia.nocookie.net/breakingbad/images/e/e7/BB-S5B-Walt-590.jpg",
