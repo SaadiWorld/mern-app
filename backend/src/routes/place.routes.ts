@@ -1,9 +1,39 @@
-import { Router } from "express";
+import express from 'express';
+import { check } from 'express-validator';
 
-const router = Router();
+import placeController from '../controllers/place.controller';
 
-router.get("/", (req, res) => {
-  res.json({ message: "Get places" });
-});
+const router = express.Router();
+
+router.get('/:pid', placeController.getPlaceById);
+
+router.get('/user/:uid', placeController.getPlacesByUserId);
+
+router.post(
+  '/',
+  [
+    check('title')
+      .not()
+      .isEmpty(),
+    check('description').isLength({ min: 5 }),
+    check('address')
+      .not()
+      .isEmpty()
+  ],
+  placeController.createPlace
+);
+
+router.patch(
+  '/:pid',
+  [
+    check('title')
+      .not()
+      .isEmpty(),
+    check('description').isLength({ min: 5 })
+  ],
+  placeController.updatePlace
+);
+
+router.delete('/:pid', placeController.deletePlace);
 
 export default router;

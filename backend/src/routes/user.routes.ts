@@ -1,13 +1,26 @@
-import { Router } from "express";
+import express from 'express';
+import { check } from 'express-validator';
 
-const router = Router();
+import userController from '../controllers/user.controller';
 
-router.get("/", (req, res) => {
-  res.json({ message: "Get users" });
-});
+const router = express.Router();
 
-router.get("/:id", (req, res) => {
-  res.json({ message: `Get user ${req.params.id}` });
-});
+router.get('/', userController.getUsers);
+
+router.post(
+  '/signup',
+  [
+    check('name')
+      .not()
+      .isEmpty(),
+    check('email')
+      .normalizeEmail() // Test@test.com => test@test.com
+      .isEmail(),
+    check('password').isLength({ min: 6 })
+  ],
+  userController.signup
+);
+
+router.post('/login', userController.login);
 
 export default router;
