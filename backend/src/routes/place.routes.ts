@@ -5,9 +5,8 @@ import placeController from '../controllers/place.controller';
 
 const router = express.Router();
 
+router.get('/', placeController.getPlaces);
 router.get('/:pid', placeController.getPlaceById);
-
-router.get('/user/:uid', placeController.getPlacesByUserId);
 
 router.post(
   '/',

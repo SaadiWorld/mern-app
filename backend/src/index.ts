@@ -1,4 +1,5 @@
 import express from "express";
+import { randomUUID } from "node:crypto";
 import { loadEnvFile } from "node:process";
 import type { Application, ErrorRequestHandler } from "express";
 import userRoutes from "./routes/user.routes";
@@ -10,9 +11,14 @@ loadEnvFile();
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  const correlationId = req.header("x-correlation-id") ?? randomUUID();
+  res.setHeader("x-correlation-id", correlationId);
+  next();
+});
 
-app.use("/api/users", userRoutes);
-app.use("/api/places", placeRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/places", placeRoutes);
 
 // runs only when no previous route handled the request
 // It creates a 404 error for unknown routes

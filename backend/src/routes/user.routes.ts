@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', userController.getUsers);
 
 router.post(
-  '/signup',
+  '/',
   [
     check('name')
       .not()
@@ -21,6 +21,10 @@ router.post(
   userController.signup
 );
 
-router.post('/login', userController.login);
+router.post(
+  '/sessions',
+  [check('email').normalizeEmail().isEmail(), check('password').not().isEmpty()],
+  userController.login
+);
 
 export default router;

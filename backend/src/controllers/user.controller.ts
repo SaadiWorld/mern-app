@@ -13,8 +13,10 @@ const dummyUsers = [
   }
 ];
 
+const toPublicUser = ({ password: _password, ...user }: (typeof dummyUsers)[number]) => user;
+
 const getUsers = (_req: Request, res: Response, _next: NextFunction): void => {
-  res.json({ users: dummyUsers });
+  res.json({ users: dummyUsers.map(toPublicUser) });
 };
 
 const signup = (req: Request, res: Response, _next: NextFunction): void => {
@@ -38,7 +40,7 @@ const signup = (req: Request, res: Response, _next: NextFunction): void => {
 
   dummyUsers.push(createdUser);
 
-  res.status(201).json({user: createdUser});
+  res.status(201).json({ user: toPublicUser(createdUser) });
 };
 
 const login = (req: Request, res: Response, _next: NextFunction): void => {

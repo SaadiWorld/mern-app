@@ -35,18 +35,14 @@ const getPlaceById = (req: Request, res: Response, _next: NextFunction): void =>
 // function getPlaceById() { ... }
 // const getPlaceById = function() { ... }
 
-const getPlacesByUserId = (req: Request, res: Response, next: NextFunction): void => {
-  const userId = req.params.uid;
+const getPlaces = (req: Request, res: Response): void => {
+  const creatorId = typeof req.query.creatorId === 'string'
+    ? req.query.creatorId
+    : undefined;
 
-  const places = dummyPlaces.filter(p => {
-    return p.creator === userId;
-  });
-
-  if (!places || places.length === 0) {
-    return next(
-      new HttpError('Could not find places for the provided user id.', 404)
-    );
-  }
+  const places = creatorId
+    ? dummyPlaces.filter(place => place.creator === creatorId)
+    : dummyPlaces;
 
   res.json({ places });
 };
@@ -116,8 +112,8 @@ const deletePlace = (req: Request, res: Response, _next: NextFunction): void => 
 };
 
 export default {
+  getPlaces,
   getPlaceById,
-  getPlacesByUserId,
   createPlace,
   updatePlace,
   deletePlace
