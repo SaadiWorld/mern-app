@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import { randomUUID } from "node:crypto";
 import { loadEnvFile } from "node:process";
 import type { Application, ErrorRequestHandler } from "express";
@@ -37,7 +38,12 @@ const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
 
 app.use(errorHandler);
 
-
-app.listen(5001, () => {
-  console.log("Server is running on port 5001");
-});
+mongoose.connect(process.env.MONGODB_URI as string)
+  .then(() => {
+    app.listen(5001, () => {
+    console.log("Server is running on port 5001");
+  });
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err);
+  });
