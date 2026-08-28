@@ -4,13 +4,17 @@ import { validationResult } from "express-validator";
 import HttpError from "../utils/http-error";
 import getCoordsForAddress from "../utils/location";
 import Place from "../models/place.model";
+import type { PlaceDocument } from "../models/place.model";
+import User from "../models/user.model";
+import type { UserDocument } from "../models/user.model";
+import mongoose from "mongoose";
 
 const getPlaceById = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  const placeId = req.params.pid; // { pid: 'p1' }
+  const placeId = req.params.pid;
 
   let place;
   try {
@@ -31,7 +35,7 @@ const getPlaceById = async (
     return next(error);
   }
 
-  res.json({ place: place.toObject({ getters: true }) }); // => { place } => { place: place }
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
 const getPlaces = async (
@@ -42,11 +46,17 @@ const getPlaces = async (
   const creatorId =
     typeof req.query.creatorId === "string" ? req.query.creatorId : undefined;
 
-  let places;
+  let allPlaces;
+  let userWithPlaces;
   try {
-    places = creatorId
-      ? await Place.find({ creator: creatorId })
-      : await Place.find();
+    if (creatorId) {
+      // await Place.find({ creator: creatorId })
+      userWithPlaces = await User.findById(creatorId).populate<{
+        places: PlaceDocument[];
+      }>("places");
+    } else {
+      allPlaces = await Place.find();
+    }
   } catch (err) {
     const error = new HttpError(
       "Fetching places failed, please try again later",
@@ -54,6 +64,8 @@ const getPlaces = async (
     );
     return next(error);
   }
+
+  const places = creatorId ? userWithPlaces?.places : allPlaces;
 
   if (!places || places.length === 0) {
     return next(
@@ -100,14 +112,36 @@ const createPlace = async (
     creator,
   });
 
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
   } catch (err) {
+    const error = new HttpError("Creating place failed, please try again", 500);
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError("Could not find user for provided id", 404);
+    return next(error);
+  }
+
+  const sess = await mongoose.startSession();
+  try {
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    user.places.push(createdPlace._id);
+    await user.save({ session: sess });
+    await sess.commitTransaction();
+    await sess.endSession();
+  } catch (err) {
+    await sess.abortTransaction();
     const error = new HttpError(
       "Creating place failed, please try again.",
       500,
     );
     return next(error);
+  } finally {
+    await sess.endSession();
   }
 
   res.status(201).json({ place: createdPlace.toObject({ getters: true }) });
@@ -167,9 +201,12 @@ const deletePlace = async (
   next: NextFunction,
 ): Promise<void> => {
   const placeId = req.params.pid;
+
   let place;
   try {
-    place = await Place.findById(placeId);
+    place = await Place.findById(placeId).populate<{
+      creator: UserDocument;
+    }>("creator");
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, could not delete place.",
@@ -179,17 +216,28 @@ const deletePlace = async (
   }
 
   if (!place) {
-    return next(new HttpError("Could not find a place for that id.", 404));
+    const error = new HttpError("Could not find place for this id.", 404);
+    return next(error);
   }
 
+  const sess = await mongoose.startSession();
   try {
-    await place.deleteOne();
+    sess.startTransaction();
+    await place.deleteOne({ session: sess });
+    place.creator.places = place.creator.places.filter(
+      (placeId) => !placeId.equals(place._id),
+    );
+    await place.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
+    await sess.abortTransaction();
     const error = new HttpError(
       "Something went wrong, could not delete place.",
       500,
     );
     return next(error);
+  } finally {
+    await sess.endSession();
   }
 
   res.status(200).json({ message: "Deleted place." });

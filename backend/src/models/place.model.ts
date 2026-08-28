@@ -1,4 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, {
+  type HydratedDocument,
+  type InferSchemaType,
+} from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -11,7 +14,10 @@ const placeSchema = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
   },
-  creator: { type: String, required: true },
+  creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
+
+export type Place = InferSchemaType<typeof placeSchema>;
+export type PlaceDocument = HydratedDocument<Place>;
 
 export default mongoose.model("Place", placeSchema);
