@@ -20,7 +20,8 @@ const UserItem = ({ user }: UserItemProps) => {
           <div className={styles["user-item__info"]}>
             <h2>{user.name}</h2>
             <h3>
-              {user.places} {user.places === 1 ? "Place" : "Places"}
+              {user.places.length}{" "}
+              {user.places.length === 1 ? "Place" : "Places"}
             </h3>
           </div>
         </Link>

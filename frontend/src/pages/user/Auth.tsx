@@ -17,6 +17,13 @@ import { AuthContext } from "../../context/auth-context";
 import { API_ENDPOINTS } from "../../api/endpoints";
 import styles from "./Auth.module.css";
 
+type AuthResponse = {
+  user: {
+    id: string;
+  };
+  message: string;
+};
+
 const Auth = () => {
   const auth = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
@@ -83,10 +90,15 @@ const Auth = () => {
         };
 
     try {
-      await sendRequest(endpoint, "POST", JSON.stringify(payload), {
-        "Content-Type": "application/json",
-      });
-      auth.login();
+      const response = await sendRequest<AuthResponse>(
+        endpoint,
+        "POST",
+        JSON.stringify(payload),
+        {
+          "Content-Type": "application/json",
+        },
+      );
+      auth.login(response.user.id);
     } catch (_err) {
       // handled by hook
     }
@@ -125,8 +137,8 @@ const Auth = () => {
             id="password"
             type="password"
             label="Password"
-            validators={[VALIDATOR_MINLENGTH(5)]}
-            errorText="Please enter a valid password, at least 5 characters."
+            validators={[VALIDATOR_MINLENGTH(6)]}
+            errorText="Please enter a valid password, at least 6 characters."
             onInput={inputHandler}
           />
           <Button type="submit" disabled={!formState.isValid}>

@@ -6,9 +6,10 @@ import styles from "./PlaceList.module.css";
 
 interface PlaceListProps {
   items: Place[];
+  onDeletePlace?: (deletedPlaceId: string) => void;
 }
 
-const PlaceList = ({ items }: PlaceListProps) => {
+const PlaceList = ({ items, onDeletePlace }: PlaceListProps) => {
   if (items.length === 0) {
     return (
       <div className={`${styles["place-list"]} center`}>
@@ -26,12 +27,13 @@ const PlaceList = ({ items }: PlaceListProps) => {
         <PlaceItem
           key={place.id}
           id={place.id}
-          image={place.imageUrl}
+          image={place.image}
           title={place.title}
           description={place.description}
           address={place.address}
           creatorId={place.creator}
           coordinates={place.location}
+          onDelete={onDeletePlace}
         />
       ))}
     </ul>

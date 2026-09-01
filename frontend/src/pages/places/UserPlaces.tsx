@@ -1,40 +1,54 @@
 import { useParams } from "react-router";
 
 import PlaceList from "../../components/places/PlaceList";
+import LoadingSpinner from "../../components/shared/UIElements/LoadingSpinner";
+import ErrorModal from "../../components/shared/UIElements/ErrorModal";
+import { useEffect, useState } from "react";
+import { useHttpClient } from "../../hooks/http-hook";
+import { API_ENDPOINTS } from "../../api/endpoints";
+import type { Place } from "../../types/place";
 
-const DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Los Pollos Hermanos",
-    description: "One of the most famous fast food chain in new mexico!",
-    imageUrl:
-      "https://static.wikia.nocookie.net/breakingbad/images/c/cf/C6kZgT2WgAQ_Xzo.jpg",
-    address: "20 W 34th St, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Madrigal Electro Motor",
-    description: "One of the most famous sky scrapers in the world!",
-    imageUrl:
-      "https://static.wikia.nocookie.net/breakingbad/images/e/ec/5x02_Madrigal.jpg",
-    address: "20 W 34th St, New York, NY 10001",
-    location: {
-      lat: 40.7484405,
-      lng: -73.9878584,
-    },
-    creator: "u2",
-  },
-];
+type PlacesResponse = {
+  places: Place[];
+};
 
 const UserPlaces = () => {
+  const [loadedPlaces, setLoadedPlaces] = useState<Place[]>([]);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
   const userId = useParams().userId;
-  const loadedPlaces = DUMMY_PLACES.filter((place) => place.creator === userId);
-  return <PlaceList items={loadedPlaces} />;
+
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const response = await sendRequest<PlacesResponse>(
+          `${API_ENDPOINTS.places}?creatorId=${userId}`,
+        );
+        setLoadedPlaces(response.places);
+      } catch (err) {}
+    };
+    fetchPlaces();
+  }, [sendRequest, userId]);
+
+  const placeDeletedHandler = (deletedPlaceId: string) => {
+    setLoadedPlaces((prevPlaces) =>
+      prevPlaces.filter((place) => place.id !== deletedPlaceId),
+    );
+  };
+
+  return (
+    <>
+      <ErrorModal error={error} onClear={clearError} />
+      {isLoading && (
+        <div className="center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {!isLoading && loadedPlaces && (
+        <PlaceList items={loadedPlaces} onDeletePlace={placeDeletedHandler} />
+      )}
+    </>
+  );
 };
 
 export default UserPlaces;

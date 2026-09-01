@@ -7,7 +7,7 @@ export interface Place {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  image: string;
   address: string;
   location: Location;
   creator: string;
@@ -21,4 +21,5 @@ export interface PlaceItemData {
   address: string;
   creatorId: string;
   coordinates: Location;
+  onDelete?: (deletedPlaceId: string) => void;
 }
