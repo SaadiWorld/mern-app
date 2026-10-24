@@ -1,7 +1,7 @@
 import { useCallback, useReducer } from "react";
 
 export type FormInput = {
-  value: string;
+  value: string | File | null;
   isValid: boolean;
 };
 
@@ -16,7 +16,7 @@ type FormAction =
   | {
       type: "INPUT_CHANGE";
       inputId: string;
-      value: string;
+      value: string | File | null;
       isValid: boolean;
     }
   | {
@@ -73,7 +73,7 @@ export const useForm = (
   });
 
   const inputHandler = useCallback(
-    (id: string, value: string, isValid: boolean) => {
+    (id: string, value: string | File | null, isValid: boolean) => {
       dispatch({
         type: "INPUT_CHANGE",
         value,

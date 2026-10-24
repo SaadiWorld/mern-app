@@ -16,6 +16,7 @@ import { useHttpClient } from "../../hooks/http-hook";
 import { AuthContext } from "../../context/auth-context";
 import { API_ENDPOINTS } from "../../api/endpoints";
 import styles from "./Auth.module.css";
+import ImageUpload from "../../components/shared/FormElements/ImageUpload";
 
 type AuthResponse = {
   user: {
@@ -52,6 +53,7 @@ const Auth = () => {
         {
           ...formState.inputs,
           name: undefined,
+          image: undefined,
         },
         emailIsValid && passwordIsValid,
       );
@@ -61,6 +63,10 @@ const Auth = () => {
           ...formState.inputs,
           name: {
             value: "",
+            isValid: false,
+          },
+          image: {
+            value: null,
             isValid: false,
           },
         },
@@ -120,6 +126,14 @@ const Auth = () => {
               label="Your Name"
               validators={[VALIDATOR_REQUIRE()]}
               errorText="Please enter a name."
+              onInput={inputHandler}
+            />
+          )}
+          {!isLoginMode && (
+            <ImageUpload
+              center
+              id="image"
+              errorText="Please pick an image."
               onInput={inputHandler}
             />
           )}
