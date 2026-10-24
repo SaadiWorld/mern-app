@@ -19,10 +19,9 @@ import styles from "./Auth.module.css";
 import ImageUpload from "../../components/shared/FormElements/ImageUpload";
 
 type AuthResponse = {
-  user: {
-    id: string;
-  };
-  message: string;
+  userId: string;
+  email: string;
+  token: string;
 };
 
 const Auth = () => {
@@ -122,7 +121,7 @@ const Auth = () => {
           formData,
         );
       }
-      auth.login(response.user.id);
+      auth.login(response.userId, response.token);
     } catch (_err) {
       // handled by hook
     }

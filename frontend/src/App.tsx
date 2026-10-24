@@ -10,21 +10,23 @@ import { AuthContext } from "./context/auth-context";
 import Auth from "./pages/user/Auth";
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const login = useCallback((uid: string) => {
-    setIsLoggedIn(true);
+  const login = useCallback((uid: string, token: string) => {
     setUserId(uid);
+    setToken(token);
   }, []);
 
   const logout = useCallback(() => {
-    setIsLoggedIn(false);
     setUserId(null);
+    setToken(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userId, login, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn: !!token, userId, token, login, logout }}
+    >
       <BrowserRouter>
         <MainNavigation />
         <main>
@@ -32,7 +34,7 @@ const App = () => {
             <Route path="/" element={<Users />} />
             <Route path=":userId/places" element={<UserPlaces />} />
 
-            {isLoggedIn ? (
+            {token ? (
               <>
                 <Route path="places/new" element={<NewPlace />} />
                 <Route path="places/:placeId" element={<UpdatePlace />} />

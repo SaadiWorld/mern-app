@@ -13,7 +13,7 @@ import { useNavigate } from "react-router";
 import ImageUpload from "../../components/shared/FormElements/ImageUpload";
 
 const NewPlace = () => {
-  const { userId } = useContext(AuthContext);
+  const { userId, token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const navigate = useNavigate();
 
@@ -51,7 +51,8 @@ const NewPlace = () => {
       typeof description !== "string" ||
       typeof address !== "string" ||
       !(image instanceof File) ||
-      !userId
+      !userId ||
+      !token
     ) {
       return;
     }
@@ -64,7 +65,9 @@ const NewPlace = () => {
     formData.append("image", image);
 
     try {
-      await sendRequest(API_ENDPOINTS.places, "POST", formData);
+      await sendRequest(API_ENDPOINTS.places, "POST", formData, {
+        Authorization: `Bearer ${token}`,
+      });
       navigate("/");
     } catch (err) {
       // Error handling is done by the useHttpClient hook
