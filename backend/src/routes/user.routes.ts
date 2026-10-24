@@ -2,7 +2,7 @@ import express from 'express';
 import { check } from 'express-validator';
 
 import userController from '../controllers/user.controller';
-import fileUpload from '../middleware/file-upload';
+import fileUpload from '../middlewares/file-upload';
 
 const router = express.Router();
 

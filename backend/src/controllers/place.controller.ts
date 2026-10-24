@@ -10,7 +10,7 @@ import type { UserDocument } from '../models/user.model';
 import mongoose from 'mongoose';
 import { unlink } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
-import { uploadDirectory } from '../middleware/file-upload';
+import { uploadDirectory } from '../middlewares/file-upload';
 
 const getPlaceById = async (
   req: Request,

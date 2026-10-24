@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import HttpError from '../utils/http-error';
 import User from '../models/user.model';
@@ -83,7 +84,23 @@ const signup = async (
     return next(error);
   }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: '1h',
+      },
+    );
+  } catch (err) {
+    const error = new HttpError('Signing up failed, please try again.', 500);
+    return next(error);
+  }
+
+  res
+    .status(201)
+    .json({ userId: createdUser.id, email: createdUser.email, token });
 };
 
 const login = async (
@@ -132,10 +149,21 @@ const login = async (
     return next(error);
   }
 
-  res.json({
-    message: 'Logged in!',
-    user: existingUser.toObject({ getters: true }),
-  });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: '1h',
+      },
+    );
+  } catch (err) {
+    const error = new HttpError('Logging in failed, please try again.', 500);
+    return next(error);
+  }
+
+  res.json({ userId: existingUser.id, email: existingUser.email, token });
 };
 
 export default { getUsers, signup, login };

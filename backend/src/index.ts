@@ -8,7 +8,7 @@ import placeRoutes from './routes/place.routes';
 import HttpError from './utils/http-error';
 import fs from 'fs';
 import multer from 'multer';
-import { uploadDirectory } from './middleware/file-upload';
+import { uploadDirectory } from './middlewares/file-upload';
 
 loadEnvFile();
 
