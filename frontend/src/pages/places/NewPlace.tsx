@@ -10,6 +10,7 @@ import { API_ENDPOINTS } from "../../api/endpoints";
 import ErrorModal from "../../components/shared/UIElements/ErrorModal";
 import LoadingSpinner from "../../components/shared/UIElements/LoadingSpinner";
 import { useNavigate } from "react-router";
+import ImageUpload from "../../components/shared/FormElements/ImageUpload";
 
 const NewPlace = () => {
   const { userId } = useContext(AuthContext);
@@ -30,26 +31,40 @@ const NewPlace = () => {
         value: "",
         isValid: false,
       },
+      image: {
+        value: null,
+        isValid: false,
+      },
     },
     false,
   );
 
   const placeSubmitHandler = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const title = formState.inputs.title?.value;
+    const description = formState.inputs.description?.value;
+    const address = formState.inputs.address?.value;
+    const image = formState.inputs.image?.value;
+    if (
+      typeof title !== "string" ||
+      typeof description !== "string" ||
+      typeof address !== "string" ||
+      !(image instanceof File) ||
+      !userId
+    ) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("address", address);
+    formData.append("creator", userId);
+    formData.append("image", image);
+
     try {
-      await sendRequest(
-        API_ENDPOINTS.places,
-        "POST",
-        JSON.stringify({
-          title: formState.inputs.title?.value,
-          description: formState.inputs.description?.value,
-          address: formState.inputs.address?.value,
-          creator: userId,
-        }),
-        {
-          "Content-Type": "application/json",
-        },
-      );
+      await sendRequest(API_ENDPOINTS.places, "POST", formData);
       navigate("/");
     } catch (err) {
       // Error handling is done by the useHttpClient hook
@@ -86,6 +101,14 @@ const NewPlace = () => {
           errorText="Please enter a valid address."
           onInput={inputHandler}
         />
+        <div className={styles["place-form__image-upload"]}>
+          <ImageUpload
+            center
+            id="image"
+            onInput={inputHandler}
+            errorText="Please provide an image."
+          />
+        </div>
         <Button type="submit" disabled={!formState.isValid}>
           ADD PLACE
         </Button>

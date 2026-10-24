@@ -3,6 +3,7 @@ import Card from "../shared/UIElements/Card";
 import styles from "./UserItem.module.css";
 import Avatar from "../shared/UIElements/Avatar";
 import type { User } from "../../types/user";
+import { getImageUrl } from "../../api/endpoints";
 
 interface UserItemProps {
   user: User;
@@ -14,7 +15,7 @@ const UserItem = ({ user }: UserItemProps) => {
       <Card className={styles["user-item__content"]}>
         <Link to={`/${user.id}/places`}>
           <div className={styles["user-item__image"]}>
-            <Avatar image={user.image} alt={user.name} />
+            <Avatar image={getImageUrl(user.image)} alt={user.name} />
           </div>
 
           <div className={styles["user-item__info"]}>

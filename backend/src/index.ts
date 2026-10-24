@@ -1,11 +1,14 @@
-import express from "express";
-import mongoose from "mongoose";
-import { randomUUID } from "node:crypto";
-import { loadEnvFile } from "node:process";
-import type { Application, ErrorRequestHandler } from "express";
-import userRoutes from "./routes/user.routes";
-import placeRoutes from "./routes/place.routes";
-import HttpError from "./utils/http-error";
+import express from 'express';
+import mongoose from 'mongoose';
+import { randomUUID } from 'node:crypto';
+import { loadEnvFile } from 'node:process';
+import type { Application, ErrorRequestHandler } from 'express';
+import userRoutes from './routes/user.routes';
+import placeRoutes from './routes/place.routes';
+import HttpError from './utils/http-error';
+import fs from 'fs';
+import multer from 'multer';
+import { uploadDirectory } from './middleware/file-upload';
 
 loadEnvFile();
 
@@ -13,38 +16,55 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
-  const correlationId = req.header("x-correlation-id") ?? randomUUID();
-  res.setHeader("x-correlation-id", correlationId);
+  const correlationId = req.header('x-correlation-id') ?? randomUUID();
+  res.setHeader('x-correlation-id', correlationId);
   next();
 });
+
+app.use('/uploads/images', express.static(uploadDirectory));
 
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization',
   );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
 
   next();
 });
 
-app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/places", placeRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/places', placeRoutes);
 
 // runs only when no previous route handled the request
 // It creates a 404 error for unknown routes
 app.use((req, res, next) => {
-  const error = new HttpError("Could not find this route.", 404);
+  const error = new HttpError('Could not find this route.', 404);
   throw error;
 });
 
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+  if (req.file) {
+    // multer adds this `file` on req object
+    fs.unlink(req.file.path, (err) => {
+      console.error('Error deleting file:', err);
+    });
+  }
   if (res.headersSent) {
     return next(error);
   }
-  res.status(error.code || 500);
-  res.json({ message: error.message || "An unknown error occurred!" });
+  const statusCode =
+    error instanceof HttpError
+      ? error.code
+      : error instanceof multer.MulterError
+        ? 400
+        : 500;
+  res.status(statusCode);
+  res.json({
+    message:
+      error instanceof Error ? error.message : 'An unknown error occurred!',
+  });
 };
 
 app.use(errorHandler);
@@ -53,9 +73,9 @@ mongoose
   .connect(process.env.MONGODB_URI as string)
   .then(() => {
     app.listen(5001, () => {
-      console.log("Server is running on port 5001");
+      console.log('Server is running on port 5001');
     });
   })
   .catch((err) => {
-    console.error("Error connecting to MongoDB:", err);
+    console.error('Error connecting to MongoDB:', err);
   });

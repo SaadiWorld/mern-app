@@ -8,3 +8,7 @@
   border-radius: 6px;
   background: white;
 }
+
+.place-form__image-upload {
+  margin: 1rem;
+}

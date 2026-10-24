@@ -10,7 +10,7 @@ import styles from "./PlaceItem.module.css";
 import ErrorModal from "../shared/UIElements/ErrorModal";
 import { useHttpClient } from "../../hooks/http-hook";
 import LoadingSpinner from "../shared/UIElements/LoadingSpinner";
-import { API_ENDPOINTS } from "../../api/endpoints";
+import { API_ENDPOINTS, getImageUrl } from "../../api/endpoints";
 
 const PlaceItem = (props: PlaceItemData) => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
@@ -77,7 +77,7 @@ const PlaceItem = (props: PlaceItemData) => {
         <Card className={styles["place-item__content"]}>
           {isLoading && <LoadingSpinner asOverlay />}
           <div className={styles["place-item__image"]}>
-            <img src={props.image} alt={props.title} />
+            <img src={getImageUrl(props.image)} alt={props.title} />
           </div>
           <div className={styles["place-item__info"]}>
             <h2>{props.title}</h2>

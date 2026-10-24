@@ -79,31 +79,49 @@ const Auth = () => {
   const authSubmitHandler = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const emailValue = formState.inputs.email?.value ?? "";
-    const passwordValue = formState.inputs.password?.value ?? "";
-    const endpoint = isLoginMode
-      ? API_ENDPOINTS.auth.login
-      : API_ENDPOINTS.auth.signup;
-    const payload = isLoginMode
-      ? {
-          email: emailValue,
-          password: passwordValue,
-        }
-      : {
-          name: formState.inputs.name?.value ?? "",
-          email: emailValue,
-          password: passwordValue,
-        };
+    const emailValue = formState.inputs.email?.value;
+    const passwordValue = formState.inputs.password?.value;
 
     try {
-      const response = await sendRequest<AuthResponse>(
-        endpoint,
-        "POST",
-        JSON.stringify(payload),
-        {
-          "Content-Type": "application/json",
-        },
-      );
+      let response: AuthResponse;
+
+      if (isLoginMode) {
+        if (
+          typeof emailValue !== "string" ||
+          typeof passwordValue !== "string"
+        ) {
+          return;
+        }
+        response = await sendRequest<AuthResponse>(
+          API_ENDPOINTS.auth.login,
+          "POST",
+          JSON.stringify({ email: emailValue, password: passwordValue }),
+          { "Content-Type": "application/json" },
+        );
+      } else {
+        const nameValue = formState.inputs.name?.value;
+        const imageValue = formState.inputs.image?.value;
+        if (
+          typeof nameValue !== "string" ||
+          typeof emailValue !== "string" ||
+          typeof passwordValue !== "string" ||
+          !(imageValue instanceof File)
+        ) {
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("email", emailValue);
+        formData.append("name", nameValue);
+        formData.append("password", passwordValue);
+        formData.append("image", imageValue);
+
+        response = await sendRequest<AuthResponse>(
+          API_ENDPOINTS.auth.signup,
+          "POST",
+          formData,
+        );
+      }
       auth.login(response.user.id);
     } catch (_err) {
       // handled by hook
@@ -133,7 +151,7 @@ const Auth = () => {
             <ImageUpload
               center
               id="image"
-              errorText="Please pick an image."
+              errorText="Please provide an image."
               onInput={inputHandler}
             />
           )}

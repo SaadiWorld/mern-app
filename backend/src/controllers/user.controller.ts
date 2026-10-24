@@ -1,8 +1,8 @@
-import type { NextFunction, Request, Response } from "express";
-import { validationResult } from "express-validator";
+import type { NextFunction, Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 
-import HttpError from "../utils/http-error";
-import User from "../models/user.model";
+import HttpError from '../utils/http-error';
+import User from '../models/user.model';
 
 const getUsers = async (
   _req: Request,
@@ -11,10 +11,10 @@ const getUsers = async (
 ): Promise<void> => {
   let users;
   try {
-    users = await User.find({}, "-password");
+    users = await User.find({}, '-password');
   } catch (err) {
     const error = new HttpError(
-      "Fetching users failed, please try again later.",
+      'Fetching users failed, please try again later.',
       500,
     );
     return next(error);
@@ -29,7 +29,7 @@ const signup = async (
 ): Promise<void> => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new HttpError("Invalid inputs passed, please check your data.", 422);
+    throw new HttpError('Invalid inputs passed, please check your data.', 422);
   }
   const { name, email, password } = req.body;
 
@@ -38,7 +38,7 @@ const signup = async (
     existingUser = await User.findOne({ email });
   } catch (err) {
     const error = new HttpError(
-      "Signing up failed, please try again later.",
+      'Signing up failed, please try again later.',
       500,
     );
     return next(error);
@@ -46,16 +46,20 @@ const signup = async (
 
   if (existingUser) {
     const error = new HttpError(
-      "User exists already, please login instead.",
+      'User exists already, please login instead.',
       422,
     );
     return next(error);
   }
 
+  if (!req.file) {
+    return next(new HttpError('Please provide a profile image.', 422));
+  }
+
   const createdUser = new User({
     name,
     email,
-    image: "https://live.staticflickr.com/7631/26849088292_36fc52ee90_b.jpg",
+    image: `/uploads/images/${req.file.filename}`,
     password,
     places: [],
   });
@@ -63,7 +67,7 @@ const signup = async (
   try {
     await createdUser.save();
   } catch (err) {
-    const error = new HttpError("Signing up failed, please try again.", 500);
+    const error = new HttpError('Signing up failed, please try again.', 500);
     return next(error);
   }
 
@@ -83,7 +87,7 @@ const login = async (
     existingUser = await User.findOne({ email });
   } catch (err) {
     const error = new HttpError(
-      "Logging in failed, please try again later.",
+      'Logging in failed, please try again later.',
       500,
     );
     return next(error);
@@ -91,14 +95,14 @@ const login = async (
 
   if (!existingUser || existingUser.password !== password) {
     const error = new HttpError(
-      "Invalid credentials, could not log you in.",
+      'Invalid credentials, could not log you in.',
       401,
     );
     return next(error);
   }
 
   res.json({
-    message: "Logged in!",
+    message: 'Logged in!',
     user: existingUser.toObject({ getters: true }),
   });
 };
