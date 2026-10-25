@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Places API
   version: 1.0.0
-  description: API for managing users and places.
+  description: API for user authentication and place management.
 servers:
   - url: http://localhost:5001/api/v1
     description: Local development server
@@ -12,13 +12,13 @@ paths:
       operationId: listUsers
       summary: List users
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
-        "200":
+        '200':
           description: Users returned successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
@@ -28,38 +28,36 @@ paths:
                   users:
                     type: array
                     items:
-                      $ref: "#/components/schemas/User"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                      $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       operationId: createUser
-      summary: Create a user
+      summary: Sign up a user
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "#/components/schemas/CreateUserRequest"
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
-        "201":
+        '201':
           description: User created successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
-                type: object
-                required: [user]
-                properties:
-                  user:
-                    $ref: "#/components/schemas/User"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
   /places:
     get:
       operationId: listPlaces
@@ -71,13 +69,13 @@ paths:
           schema:
             type: string
           description: Return only places created by this user.
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
-        "200":
+        '200':
           description: Places returned successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
@@ -87,26 +85,30 @@ paths:
                   places:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Place"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                      $ref: '#/components/schemas/Place'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       operationId: createPlace
       summary: Create a place
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "#/components/schemas/CreatePlaceRequest"
+              $ref: '#/components/schemas/CreatePlaceRequest'
+      security:
+        - BearerAuth: []
       responses:
-        "201":
+        '201':
           description: Place created successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
@@ -114,51 +116,57 @@ paths:
                 required: [place]
                 properties:
                   place:
-                    $ref: "#/components/schemas/Place"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /sessions:
+                    $ref: '#/components/schemas/Place'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /users/sessions:
     post:
       operationId: loginUser
       summary: Authenticate a user
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: '#/components/schemas/LoginRequest'
       responses:
-        "200":
+        '200':
           description: User authenticated successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                $ref: '#/components/schemas/AuthResponse'
+        '403':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /places/{placeId}:
     parameters:
-      - $ref: "#/components/parameters/PlaceId"
+      - $ref: '#/components/parameters/PlaceId'
     get:
       operationId: getPlace
       summary: Get a place
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
-        "200":
+        '200':
           description: Place returned successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
@@ -166,28 +174,30 @@ paths:
                 required: [place]
                 properties:
                   place:
-                    $ref: "#/components/schemas/Place"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                    $ref: '#/components/schemas/Place'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     patch:
       operationId: updatePlace
       summary: Update a place
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdatePlaceRequest"
+              $ref: '#/components/schemas/UpdatePlaceRequest'
       responses:
-        "200":
+        '200':
           description: Place updated successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
@@ -195,32 +205,38 @@ paths:
                 required: [place]
                 properties:
                   place:
-                    $ref: "#/components/schemas/Place"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                    $ref: '#/components/schemas/Place'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     delete:
       operationId: deletePlace
       summary: Delete a place
       parameters:
-        - $ref: "#/components/parameters/CorrelationId"
+        - $ref: '#/components/parameters/CorrelationId'
+      security:
+        - BearerAuth: []
       responses:
-        "200":
+        '200':
           description: Place deleted successfully.
           headers:
             x-correlation-id:
-              $ref: "#/components/headers/CorrelationId"
+              $ref: '#/components/headers/CorrelationId'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 components:
   parameters:
     CorrelationId:
@@ -242,47 +258,61 @@ components:
       description: Identifier used to correlate the request with server logs.
       schema:
         type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   responses:
+    BadRequest:
+      description: The request contains an invalid or unsupported upload.
+      headers:
+        x-correlation-id:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: The requested resource was not found.
       headers:
         x-correlation-id:
-          $ref: "#/components/headers/CorrelationId"
+          $ref: '#/components/headers/CorrelationId'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: '#/components/schemas/ErrorResponse'
     ValidationError:
       description: Request validation failed.
       headers:
         x-correlation-id:
-          $ref: "#/components/headers/CorrelationId"
+          $ref: '#/components/headers/CorrelationId'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
       description: Authentication failed.
       headers:
         x-correlation-id:
-          $ref: "#/components/headers/CorrelationId"
+          $ref: '#/components/headers/CorrelationId'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: '#/components/schemas/ErrorResponse'
     InternalServerError:
       description: An unexpected server error occurred.
       headers:
         x-correlation-id:
-          $ref: "#/components/headers/CorrelationId"
+          $ref: '#/components/headers/CorrelationId'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorResponse"
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     User:
       type: object
-      required: [id, name, email]
+      required: [id, name, email, image, places]
       properties:
         id:
           type: string
@@ -291,9 +321,17 @@ components:
         email:
           type: string
           format: email
+        image:
+          type: string
+          description: URL path to the profile image.
+        places:
+          type: array
+          items:
+            type: string
+          description: IDs of places created by the user.
     CreateUserRequest:
       type: object
-      required: [name, email, password]
+      required: [name, email, password, image]
       properties:
         name:
           type: string
@@ -305,6 +343,10 @@ components:
           type: string
           minLength: 6
           writeOnly: true
+        image:
+          type: string
+          format: binary
+          description: JPEG or PNG profile image, up to 500 KB.
     LoginRequest:
       type: object
       required: [email, password]
@@ -325,7 +367,7 @@ components:
           type: number
     Place:
       type: object
-      required: [id, title, description, location, creator]
+      required: [id, title, description, image, address, location, creator]
       properties:
         id:
           type: string
@@ -333,15 +375,18 @@ components:
           type: string
         description:
           type: string
+        image:
+          type: string
+          description: URL path to the place image.
         address:
           type: string
         location:
-          $ref: "#/components/schemas/Coordinates"
+          $ref: '#/components/schemas/Coordinates'
         creator:
           type: string
     CreatePlaceRequest:
       type: object
-      required: [title, description, address]
+      required: [title, description, address, image]
       properties:
         title:
           type: string
@@ -352,8 +397,22 @@ components:
         address:
           type: string
           minLength: 1
-        creator:
+        image:
           type: string
+          format: binary
+          description: JPEG or PNG place image, up to 500 KB.
+    AuthResponse:
+      type: object
+      required: [userId, email, token]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+          description: JWT bearer token, valid for one hour.
     UpdatePlaceRequest:
       type: object
       required: [title, description]
@@ -371,12 +430,6 @@ components:
         message:
           type: string
     MessageResponse:
-      type: object
-      required: [message]
-      properties:
-        message:
-          type: string
-    LoginResponse:
       type: object
       required: [message]
       properties:
