@@ -69,6 +69,10 @@ const UpdatePlace = () => {
     event: SubmitEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
+    if (!auth.token) {
+      return;
+    }
+
     try {
       await sendRequest(
         `${API_ENDPOINTS.places}/${placeId}`,
@@ -79,6 +83,7 @@ const UpdatePlace = () => {
         }),
         {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
         },
       );
       navigate("/" + auth.userId + "/places");

@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import "./App.css";
 import NewPlace from "./pages/places/NewPlace";
@@ -8,20 +7,10 @@ import Users from "./pages/user/Users";
 import MainNavigation from "./components/shared/Navigation/MainNavigation";
 import { AuthContext } from "./context/auth-context";
 import Auth from "./pages/user/Auth";
+import { useAuth } from "./hooks/auth-hook";
 
 const App = () => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  const login = useCallback((uid: string, token: string) => {
-    setUserId(uid);
-    setToken(token);
-  }, []);
-
-  const logout = useCallback(() => {
-    setUserId(null);
-    setToken(null);
-  }, []);
+  const { userId, token, login, logout } = useAuth();
 
   return (
     <AuthContext.Provider
