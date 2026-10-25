@@ -61,7 +61,6 @@ const NewPlace = () => {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("address", address);
-    formData.append("creator", userId);
     formData.append("image", image);
 
     try {

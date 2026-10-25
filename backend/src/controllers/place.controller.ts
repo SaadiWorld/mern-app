@@ -100,7 +100,7 @@ const createPlace = async (
     return next(new HttpError('Please provide an image.', 422));
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   let coordinates;
   try {
@@ -115,12 +115,12 @@ const createPlace = async (
     address,
     location: coordinates,
     image: `/uploads/images/${req.file.filename}`,
-    creator,
+    creator: req.userData?.userId,
   });
 
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData?.userId);
   } catch (err) {
     const error = new HttpError('Creating place failed, please try again', 500);
     return next(error);
